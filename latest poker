@@ -1,0 +1,259 @@
+import random
+
+suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
+ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"]
+
+class Deck(object):
+    cards = []
+
+    def __init__(self, suit, rank, cards):
+        self.suit = suit
+        self.rank = rank
+        self.makeCards(suits, ranks)
+
+    def elaborate(tuplecard):
+        return ("{} of {}".format(tuplecard[1], tuplecard[0]))
+
+    def makeCards(suitOfCard, rankOfCard):
+
+        for s in suitOfCard:
+            for r in rankOfCard:
+                Deck.cards.append((s, r))
+        return Deck.cards
+
+    def popDeck(num, freq, list_to_pop):
+        try:
+            for i in range(freq):
+                result = list_to_pop.pop(num)
+            return result
+        except:
+            return ("fail")
+
+    def bubblesort(array):
+        length = len(array)
+        for i in range(length - 1):
+            for o in range(length - 1):
+                if array[o] > array[o + 1]:
+                    array[o], array[o + 1] = array[o + 1], array[o]
+
+    def numerate(array, num):
+        lengthlist = len(array)
+        finallist = []
+        for i in range(lengthlist):
+            for o in range(0, 13):
+                if array[i][1] == ranks[o]:
+                    if num == 1:
+                        microlist = array[i][0], o + 1
+                        finallist.append(microlist)
+                    else:
+
+                        microlist = o + 1
+                        finallist.append(microlist)
+        return finallist
+
+    def hand_is_flush(newtup):
+        dia, heart, spades, clubs = 0,0,0,0
+        returnlist = []
+        currhand = []
+        for x in range(len(newtup)):
+            currhand.append(newtup[x][0])
+        # this code passes in the list of the suits exclusively, as in hand_is_flush(cardhand[][0])
+        for i in range(len(currhand)):
+            if currhand[i] == 'Diamonds':
+                dia += 1
+            elif currhand[i] == 'Spades':
+                spades += 1
+            elif currhand[i] == 'Clubs':
+                clubs += 1
+            elif currhand[i] == 'Hearts':
+                heart += 1
+
+        if dia >= 5:
+            return Deck.remove_off_list(newtup, 'Diamonds')
+        elif clubs >= 5:
+            return Deck.remove_off_list(newtup, 'Spades')
+        elif spades >= 5:
+            return Deck.remove_off_list(newtup, 'Clubs')
+        elif heart >= 5:
+            print()
+            return Deck.remove_off_list(newtup, 'Hearts')
+        else:
+
+            return("no flush")
+
+    def remove_off_list(array, item):
+        returnlist = []
+        for z in range(len(array)):
+            if array[z][0] == item:
+                thing = array[z][0], array[z][1]
+                returnlist.append(thing)
+        return returnlist
+
+    def hand_is_straight(current_hand):  # pass in the numerated integer values
+        straight = 1
+
+        resultlist = []
+        i = 0
+        while i != (len(current_hand)-1): #remove duplicates
+            if current_hand[i] == current_hand[i+1]:
+                current_hand.remove(current_hand[i+1])
+
+            else:
+                i += 1
+        print(current_hand)
+
+        if current_hand[len(current_hand) - 1] <= 7: # switch ace position to 1 if median is 7
+            for i in range(len(current_hand)):# (ace high straight has a low of 8 so this works out)
+                current_hand[i] = current_hand[i] + 1
+                #increase all numbers by 1
+                if current_hand[i] == 14:#if it is 14, swap it to value of 1
+                    current_hand[i] == 1
+
+        for t in range(len(current_hand)):
+            if straight >= 5:
+                print("straight!")
+                return resultlist
+
+            if straight < 2:
+
+                resultlist.append(current_hand[t])
+
+            if current_hand[t] + 1 == current_hand[t + 1]:
+                straight += 1
+                resultlist.append(current_hand[t + 1])
+            else:
+                straight = 1
+                resultlist.clear()
+
+        return "no straight"
+
+    def paircheck(curHand): #works but deletes items of this list so be careful
+        handcheck = curHand
+        pairs = 0
+        threeOfAKind = 0
+        fourOfAKind = 0
+        i = 0
+        cyclecancer = 0
+        twins = []
+
+        while i != len(handcheck)-1 and cyclecancer != 9:
+            cyclecancer += 1
+            #print(len(handcheck))
+            #print(i, len(curHand))
+            #print(handcheck[i-1])            ALLL this ends up in a forever loop, sign of bad code. WIP
+            try:
+                if handcheck[i] == handcheck[i + 3]:
+                    fourOfAKind = 1
+                    twins.append(handcheck[i] * 4)
+                    Deck.popDeck(i, 4, handcheck)
+                    print("four of a kind found")
+                    i -=1
+
+            except:
+                pass
+
+            try:
+                if handcheck[i] == handcheck[i + 2]:
+                    threeOfAKind = 1
+                    twins.append(handcheck[i] * 3)
+                    Deck.popDeck(i, 3, handcheck)
+                    print("three of a kind found")
+                    i -=1
+
+            except:
+                pass
+
+            try:
+                if handcheck[i] == handcheck[i + 1]:
+                    pairs += 1
+                    twins.append(handcheck[i] * 2)
+                    Deck.popDeck(i, 2, handcheck)
+                    print("one pair found")
+                    i -= 1
+            except:
+                pass
+            else:
+                i += 1
+                pass
+        print(pairs, threeOfAKind, fourOfAKind, twins)
+
+    def card_hand_rank_checker(current_hand):
+        numbered_cards = Deck.numerate(current_hand, 1)
+        highest_hand_rank = 0
+        highest_hand_card = 0
+        only_num = Deck.numerate(current_hand, 2)
+        #print(current_hand, "this is normal")
+        #Deck.bubblesort(only_num)                                            #straight flush check
+        #check for straight flush
+        num_flush = []
+        flush = Deck.hand_is_flush(numbered_cards)
+        for i in range(len(flush)):
+            num_flush.append(flush[i][1])
+        Deck.bubblesort(num_flush)
+        print(num_flush)
+
+
+        if flush != "no flush":
+            straightflush = Deck.hand_is_straight(num_flush)
+            print(straightflush)
+            if straightflush != "no straight":
+                print("yeah")
+                if straightflush[len(straightflush)-1] == 13:
+                    highest_hand_rank = 10
+                else:
+                    highest_hand_rank, highest_hand_card = 9, straightflush[len(straightflush)-1]
+                    print("WORKS ") # kinda works test this function more
+            else:
+                highest_hand_rank, highest_hand_card = 6, flush[len(flush)-1]
+
+
+
+
+
+
+
+
+
+# for c in Deck.makeCards(suits, ranks):
+#    print(Deck.elaborate(c))
+
+
+
+# MAIN
+Deck.makeCards(suits, ranks)
+
+# 7 card test
+cardhand = []
+while len(cardhand) != 7:
+    randomint = random.randint(0, len(Deck.cards))
+    cardinsert = Deck.popDeck(randomint, 1, Deck.cards)
+    if cardinsert == "fail":
+        pass
+    else:
+        cardhand.append(cardinsert)
+
+    # print(len(Deck.cards))
+test = [('Hearts', '5'), ('Hearts', '4'), ('Hearts', '7'), ('Hearts', '8'), ('Diamonds', '5'), ('Hearts', '6'), ('Hearts', '7')]
+print(Deck.card_hand_rank_checker(test))
+
+#crazy = Deck.numerate(cardhand, 2)
+#Deck.bubblesort(crazy)
+#print("bubble sorted", crazy)
+#print(Deck.hand_is_flush(cardhand[:][0]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
