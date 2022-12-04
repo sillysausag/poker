@@ -1,15 +1,17 @@
 import random
 
-suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
-ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"]
 
-class Deck(object):
+
+class Deck(object):#game class idrk it does shit so
     cards = []
+    suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
+    ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"]
 
-    def __init__(self, suit, rank, cards):
-        self.suit = suit
-        self.rank = rank
-        self.makeCards(suits, ranks)
+    def get_suits(self):
+        return Deck.suits
+
+    def get_ranks(self):
+        return Deck.ranks
 
     def elaborate(tuplecard):
         return ("{} of {}".format(tuplecard[1], tuplecard[0]))
@@ -37,11 +39,18 @@ class Deck(object):
                     array[o], array[o + 1] = array[o + 1], array[o]
 
     def numerate(array, num):
-        lengthlist = len(array)
+        try:
+            lengthlist = len(array)
+        except:
+            lengthlist = 1
         finallist = []
+        if num == 6:
+            me = Deck.get_ranks(array)
+            return me[array-1]
         for i in range(lengthlist):
             for o in range(0, 13):
-                if array[i][1] == ranks[o]:
+
+                if array[i][1] == Deck.get_ranks(Deck)[o]:
                     if num == 1:
                         microlist = array[i][0], o + 1
                         finallist.append(microlist)
@@ -97,10 +106,8 @@ class Deck(object):
         while i != (len(current_hand)-1): #remove duplicates
             if current_hand[i] == current_hand[i+1]:
                 current_hand.remove(current_hand[i+1])
-
             else:
                 i += 1
-        print(current_hand)
 
         if current_hand[len(current_hand) - 1] <= 7: # switch ace position to 1 if median is 7
             for i in range(len(current_hand)):# (ace high straight has a low of 8 so this works out)
@@ -109,7 +116,7 @@ class Deck(object):
                 if current_hand[i] == 14:#if it is 14, swap it to value of 1
                     current_hand[i] == 1
 
-        for t in range(len(current_hand)):
+        for t in range(len(current_hand)-1):
             if straight >= 5:
                 print("straight!")
                 return resultlist
@@ -144,7 +151,7 @@ class Deck(object):
             try:
                 if handcheck[i] == handcheck[i + 3]:
                     fourOfAKind = 1
-                    twins.append(handcheck[i] * 4)
+                    twins.append(handcheck[i:i+4])
                     Deck.popDeck(i, 4, handcheck)
                     print("four of a kind found")
                     i -=1
@@ -155,7 +162,7 @@ class Deck(object):
             try:
                 if handcheck[i] == handcheck[i + 2]:
                     threeOfAKind = 1
-                    twins.append(handcheck[i] * 3)
+                    twins.append(handcheck[i:i+3])
                     Deck.popDeck(i, 3, handcheck)
                     print("three of a kind found")
                     i -=1
@@ -166,92 +173,251 @@ class Deck(object):
             try:
                 if handcheck[i] == handcheck[i + 1]:
                     pairs += 1
-                    twins.append(handcheck[i] * 2)
+                    twins.append(handcheck[i:i+2])
                     Deck.popDeck(i, 2, handcheck)
-                    print("one pair found")
                     i -= 1
             except:
                 pass
             else:
                 i += 1
                 pass
-        print(pairs, threeOfAKind, fourOfAKind, twins)
+        return pairs, threeOfAKind, fourOfAKind, twins
+
+    def leadingnum(num, bignum):
+        if num >= bignum:
+            return num
+        else:
+            return bignum
 
     def card_hand_rank_checker(current_hand):
         numbered_cards = Deck.numerate(current_hand, 1)
         highest_hand_rank = 0
         highest_hand_card = 0
         only_num = Deck.numerate(current_hand, 2)
+
         #print(current_hand, "this is normal")
         #Deck.bubblesort(only_num)                                            #straight flush check
         #check for straight flush
-        num_flush = []
-        flush = Deck.hand_is_flush(numbered_cards)
-        for i in range(len(flush)):
-            num_flush.append(flush[i][1])
-        Deck.bubblesort(num_flush)
-        print(num_flush)
 
+
+
+
+        flush = Deck.hand_is_flush(numbered_cards)
 
         if flush != "no flush":
+            num_flush = []
+            for i in range(len(flush)):
+
+                num_flush.append(flush[i][1])
+            Deck.bubblesort(num_flush)
+
             straightflush = Deck.hand_is_straight(num_flush)
-            print(straightflush)
-            if straightflush != "no straight":
-                print("yeah")
-                if straightflush[len(straightflush)-1] == 13:
+            if straightflush != "no straight":#checks if the cards that are flush are straight as well
+
+                if straightflush[len(straightflush)-1] == 13:#checks for royal flush
                     highest_hand_rank = 10
+                    return highest_hand_rank
                 else:
                     highest_hand_rank, highest_hand_card = 9, straightflush[len(straightflush)-1]
-                    print("WORKS ") # kinda works test this function more
+                    print("got a flush straight")
+                    return highest_hand_rank, highest_hand_card
             else:
-                highest_hand_rank, highest_hand_card = 6, flush[len(flush)-1]
+                highest_hand_rank = Deck.leadingnum(6, highest_hand_rank)
+                if highest_hand_rank == 6:
+                    highest_hand_card = flush[len(flush)-1]
+                    return highest_hand_rank, highest_hand_card
+        else: # if the cardset isnt flush at all
+            pass # go to next if statement, which will be all the paircheck
 
+        Deck.bubblesort(only_num)
+        straightdeck = Deck.hand_is_straight(only_num)
+        if straightdeck != "no straight":
+            highest_hand_rank, highest_hand_card = Deck.leadingnum(5, highest_hand_rank), straightdeck[len(straightdeck)-1]
+            return highest_hand_rank, highest_hand_card
+        else:
+            pass
+        only_num = Deck.numerate(current_hand, 2)
+        Deck.bubblesort(only_num)
+        pairs = Deck.paircheck(only_num)
 
+        if pairs[2] == 1:#four of a kind
+            highest_hand_rank = Deck.leadingnum(8, highest_hand_rank)
+        if highest_hand_rank == 8:
+            for i in range(len(pairs[3])):
+                if len(pairs[3][i]) == 4:
+                    highest_hand_card = pairs[3][i][1]
+                    return highest_hand_rank, highest_hand_card
 
+        if pairs[1]  >= 1 and pairs[0] >= 1:# full house
+            highest_hand_rank = Deck.leadingnum(7, highest_hand_rank)
+            highest_hand_card = pairs[len(pairs)-1][0][0]
+            return highest_hand_rank, highest_hand_card
 
+        if pairs[1] >= 1:# three of a kind
+            highest_hand_rank = Deck.leadingnum(4, highest_hand_rank)
+            highest_hand_card = pairs[len(pairs) - 1][0][0]
+            return highest_hand_rank, highest_hand_card
 
+        if pairs[0] >= 2:# two pair
 
+            highest_hand_rank = Deck.leadingnum(3, highest_hand_rank)
+            highest_hand_card = pairs[len(pairs) - 1][1][0]
+            return highest_hand_rank, highest_hand_card
 
+        if pairs[0] == 1:#pair
 
+            highest_hand_rank = Deck.leadingnum(2, highest_hand_rank)
+            highest_hand_card = pairs[len(pairs) - 1][0][0]
+            return highest_hand_rank, highest_hand_card
+        else:
+            return 1, only_num[len(only_num)-1]
 
+    def makestack(cardhand, num):
+        while len(cardhand) != num:
+
+            randomint = random.randint(0, len(Deck.cards))
+            cardinsert = Deck.popDeck(randomint, 1, Deck.cards)
+            if cardinsert == "fail":
+                pass
+            else:
+                cardhand.append(cardinsert)
+        return cardhand
 # for c in Deck.makeCards(suits, ranks):
 #    print(Deck.elaborate(c))
+    def playround(phand, dhand, round, i):
+        print("Round", round)
+        print(phand)
+        combinedhand = phand + dhand
+        print(dhand[:i+3])
+        print("Your cards", Deck.card_hand_rank_checker(combinedhand[:i + 5]))
+        #print("Dealer Cards:", Deck.card_hand_rank_checker(dhand), dhand)
+        inp = input("next round?")
+        return Deck.card_hand_rank_checker(combinedhand[:i + 5])
+
+    def elabrank(h_rank, card):
+        if h_rank == 1:
+            return (card, '-high High Card')
+        elif h_rank == 2:
+            return (card, "-high One Pair")
+        elif h_rank == 3:
+            return (card, "-high Two Pair")
+        elif h_rank == 4:
+            return (card, "-high Three Of A Kind")
+        elif h_rank == 5:
+            return (card , "-high Straight")
+        elif h_rank == 6:
+            return (card , "-high Flush")
+        elif h_rank == 7:
+            return (card ,"-high Full House")
+        elif h_rank == 8:
+            return (card , ", Four of A Kind")
+        elif h_rank == 9:
+            return (card , "-high Straight Flush")
+        elif h_rank == 9:
+            return (card , "Royal Flush")
+
+
+class Player():
+    def __init__(self):
+        self.name = self
+        self.balance = 0
+        self.hand = []
+        self.score = ()
+        self.folded = False
+    def __floordiv__(self, other):
+        if self.notapussy():
+            other.append(self.score)
+    def getroundscore(self, dealerh):
+        print()
+        playerhand = Deck.makestack(self.hand, 2)
+        comhand = playerhand + dealerhand
+        return Deck.card_hand_rank_checker(comhand)
+
+    def notapussy(self):
+        if self.folded == False:
+            return True
+        else:
+            return False
+
+def comparescore(winner):
+    print(winner)
+    success_index = 0
+    for o in range(0,2):
+        for i in range(6):
+            for t in range(6):
+                if winner[i][o] < winner[t][o]:
+                    success_index = [t]
+    print(success_index)
+    return success_index
 
 
 
-# MAIN
-Deck.makeCards(suits, ranks)
 
-# 7 card test
-cardhand = []
-while len(cardhand) != 7:
-    randomint = random.randint(0, len(Deck.cards))
-    cardinsert = Deck.popDeck(randomint, 1, Deck.cards)
-    if cardinsert == "fail":
-        pass
-    else:
-        cardhand.append(cardinsert)
+# MAIN roundwise
+Deck.makeCards(Deck.get_suits(Deck), Deck.get_ranks(Deck))
 
-    # print(len(Deck.cards))
-test = [('Hearts', '5'), ('Hearts', '4'), ('Hearts', '7'), ('Hearts', '8'), ('Diamonds', '5'), ('Hearts', '6'), ('Hearts', '7')]
-print(Deck.card_hand_rank_checker(test))
+dealerhand = []
+dealerhand = Deck.makestack(dealerhand, 5)
+print("The dealer currently has:" )
+str = ''
+for c in dealerhand:
+    str = str + Deck.elaborate(c) + ", "
+print(str)
+
+print("the player currently has:")
+playerhand = []
+playerhand = Deck.makestack(playerhand, 2)
+str = ''
+for c in playerhand:
+    str = str + Deck.elaborate(c) + ", "
+print(str)
+
+combinedhand = playerhand + dealerhand
+
+
+  # print(len(Deck.cards))
+#test = [('Clubs', 'Ace'), ('Hearts', 'Ace'), ('Diamonds', '3'), ('Hearts', '6'), ('Spades', '8'), ('Hearts', '8'), ('Hearts', 'King')]
+for i in range(3):
+    Deck.playround(playerhand, dealerhand, 3, i)
 
 #crazy = Deck.numerate(cardhand, 2)
 #Deck.bubblesort(crazy)
 #print("bubble sorted", crazy)
 #print(Deck.hand_is_flush(cardhand[:][0]))
+print("ye1")
+#main player (us
+playermain = Player()
+print("ye2")
+
+playermain.balance = 1000
+playermain.score = playermain.getroundscore(dealerhand)
+player2 = Player()
+player2.score = player2.getroundscore(dealerhand)
+player3 = Player()
+player3.score = player3.getroundscore(dealerhand)
+player4 = Player()
+player4.score = player4.getroundscore(dealerhand)
+player5 = Player()
+player5.score = player5.getroundscore(dealerhand)
+player6 = Player()
+player6.score = player6.getroundscore(dealerhand)
 
 
+print(dealerhand, "LISTEN HERE LITSTE")
+winnerlist = []
+playermain // winnerlist
+player2 // winnerlist
+player3 // winnerlist
+player4 // winnerlist
+player5 // winnerlist
+player6 // winnerlist
+done = comparescore(winnerlist)
+print(int(done[0]), "yo sthis me")
+elab = Deck.elabrank(winnerlist[done[0]][0], winnerlist[done[0]][1])
+numba = Deck.numerate(elab[0], 6)
 
-
-
-
-
-
-
-
-
-
+print("player", done[0]+1, "Won with a", numba +  elab[1])
+#nice
 
 
 
